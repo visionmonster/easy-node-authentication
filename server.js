@@ -14,7 +14,15 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 
+const fs = require('fs');
+const key = fs.readFileSync('./key.pem');
+const cert = fs.readFileSync('./cert.pem');
+
+
 var configDB = require('./config/database.js');
+
+const https = require('https');
+const server = https.createServer({key: key, cert: cert }, app);
 
 // configuration ===============================================================
 mongoose.connect(configDB.url); // connect to our database
@@ -43,5 +51,5 @@ app.use(flash()); // use connect-flash for flash messages stored in session
 require('./app/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport
 
 // launch ======================================================================
-app.listen(port);
+server.listen(process.env['PORT'] || 8080);
 console.log('The magic happens on port ' + port);
