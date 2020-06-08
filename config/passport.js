@@ -2,13 +2,21 @@
 var LocalStrategy    = require('passport-local').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
 var TwitterStrategy  = require('passport-twitter').Strategy;
-var GoogleStrategy   = require('passport-google-oauth').OAuth2Strategy;
+var GoogleStrategy   = require('passport-google-oauth20').Strategy;
 
 // load up the user model
-var User       = require('../app/models/user');
+ //var User       = require('../app/models/mongouser');
+const {User, findOne, findById} = require('../app/models/mysqluser');
+
+User.findOne = User.findOne || findOne;
+User.findById = User.findById || findById;
+//const User = new user();
+
 
 // load the auth variables
 var configAuth = require('./auth'); // use this one for testing
+
+console.log('this is my config auth',configAuth);
 
 module.exports = function(passport) {
 
@@ -20,12 +28,16 @@ module.exports = function(passport) {
 
     // used to serialize the user for the session
     passport.serializeUser(function(user, done) {
+      console.log('serializeUser id', user.id);
         done(null, user.id);
     });
 
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
+      console.log('deserializeUser id', id);
+
         User.findById(id, function(err, user) {
+          console.log(user);
             done(err, user);
         });
     });
@@ -99,6 +111,7 @@ module.exports = function(passport) {
                         newUser.local.password = newUser.generateHash(password);
 
                         newUser.save(function(err) {
+
                             if (err)
                                 return done(err);
 
@@ -114,7 +127,7 @@ module.exports = function(passport) {
                 User.findOne({ 'local.email' :  email }, function(err, user) {
                     if (err)
                         return done(err);
-                    
+
                     if (user) {
                         return done(null, false, req.flash('loginMessage', 'That email is already taken.'));
                         // Using 'loginMessage instead of signupMessage because it's used by /connect/local'
@@ -125,7 +138,7 @@ module.exports = function(passport) {
                         user.save(function (err) {
                             if (err)
                                 return done(err);
-                            
+
                             return done(null,user);
                         });
                     }
@@ -146,7 +159,7 @@ module.exports = function(passport) {
     fbStrategy.passReqToCallback = true;  // allows us to pass in the req from our route (lets us check if a user is logged in or not)
     passport.use(new FacebookStrategy(fbStrategy,
     function(req, token, refreshToken, profile, done) {
-
+      console.log('req.user:', req.user);
         // asynchronous
         process.nextTick(function() {
 
@@ -158,17 +171,17 @@ module.exports = function(passport) {
                         return done(err);
 
                     if (user) {
-
+                      console.log('found user:', user);
                         // if there is a user id already but no token (user was linked at one point and then removed)
                         if (!user.facebook.token) {
                             user.facebook.token = token;
-                            user.facebook.name  = profile.name.givenName + ' ' + profile.name.familyName;
+                            user.facebook.displayName  = profile.name.givenName + ' ' + profile.name.familyName;
                             user.facebook.email = (profile.emails[0].value || '').toLowerCase();
 
                             user.save(function(err) {
                                 if (err)
                                     return done(err);
-                                    
+
                                 return done(null, user);
                             });
                         }
@@ -180,13 +193,13 @@ module.exports = function(passport) {
 
                         newUser.facebook.id    = profile.id;
                         newUser.facebook.token = token;
-                        newUser.facebook.name  = profile.name.givenName + ' ' + profile.name.familyName;
+                        newUser.facebook.displayName  = profile.name.givenName + ' ' + profile.name.familyName;
                         newUser.facebook.email = (profile.emails[0].value || '').toLowerCase();
 
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
-                                
+
                             return done(null, newUser);
                         });
                     }
@@ -198,13 +211,13 @@ module.exports = function(passport) {
 
                 user.facebook.id    = profile.id;
                 user.facebook.token = token;
-                user.facebook.name  = profile.name.givenName + ' ' + profile.name.familyName;
+                user.facebook.displayName  = profile.name.givenName + ' ' + profile.name.familyName;
                 user.facebook.email = (profile.emails[0].value || '').toLowerCase();
-
+                console.log('link the accounts ----------->', user);
                 user.save(function(err) {
                     if (err)
                         return done(err);
-                        
+
                     return done(null, user);
                 });
 
@@ -246,7 +259,7 @@ module.exports = function(passport) {
                             user.save(function(err) {
                                 if (err)
                                     return done(err);
-                                    
+
                                 return done(null, user);
                             });
                         }
@@ -264,7 +277,7 @@ module.exports = function(passport) {
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
-                                
+
                             return done(null, newUser);
                         });
                     }
@@ -282,7 +295,7 @@ module.exports = function(passport) {
                 user.save(function(err) {
                     if (err)
                         return done(err);
-                        
+
                     return done(null, user);
                 });
             }
@@ -319,13 +332,13 @@ module.exports = function(passport) {
                         // if there is a user id already but no token (user was linked at one point and then removed)
                         if (!user.google.token) {
                             user.google.token = token;
-                            user.google.name  = profile.displayName;
+                            user.google.displayName  = profile.displayName;
                             user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
 
                             user.save(function(err) {
                                 if (err)
                                     return done(err);
-                                    
+
                                 return done(null, user);
                             });
                         }
@@ -336,13 +349,13 @@ module.exports = function(passport) {
 
                         newUser.google.id    = profile.id;
                         newUser.google.token = token;
-                        newUser.google.name  = profile.displayName;
+                        newUser.google.displayName  = profile.displayName;
                         newUser.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
 
                         newUser.save(function(err) {
                             if (err)
                                 return done(err);
-                                
+
                             return done(null, newUser);
                         });
                     }
@@ -354,13 +367,13 @@ module.exports = function(passport) {
 
                 user.google.id    = profile.id;
                 user.google.token = token;
-                user.google.name  = profile.displayName;
+                user.google.displayName  = profile.displayName;
                 user.google.email = (profile.emails[0].value || '').toLowerCase(); // pull the first email
 
                 user.save(function(err) {
                     if (err)
                         return done(err);
-                        
+
                     return done(null, user);
                 });
 

@@ -49,7 +49,7 @@
                         <strong>id</strong>: <%= user.facebook.id %><br>
                         <strong>token</strong>: <%= user.facebook.token %><br>
                         <strong>email</strong>: <%= user.facebook.email %><br>
-                        <strong>name</strong>: <%= user.facebook.display_name ||  user.facebook.name %><br>
+                        <strong>name</strong>: <%= user.facebook.displayName %><br>
                     </p>
 
                     <a href="/unlink/facebook" class="btn btn-primary">Unlink</a>
@@ -86,14 +86,14 @@
         <!-- GOOGLE INFORMATION -->
         <div class="col-sm-6">
             <div class="well">
-                <h3 class="text-danger"><span class="fa fa-google-plus"></span> Google+</h3>
+                <h3 class="text-danger"><span class="fa fa-google-plus"></span> Google</h3>
 
                 <% if (user.google.token) { %>
                     <p>
                         <strong>id</strong>: <%= user.google.id %><br>
                         <strong>token</strong>: <%= user.google.token %><br>
                         <strong>email</strong>: <%= user.google.email %><br>
-                        <strong>name</strong>: <%= user.google.name %>
+                        <strong>name</strong>: <%= user.google.displayName %>
                     </p>
 
                     <a href="/unlink/google" class="btn btn-danger">Unlink</a>

@@ -7,6 +7,7 @@ lib-cov
 *.pid
 *.gz
 *.pem
+.env
 
 pids
 logs
@@ -15,5 +16,4 @@ results
 npm-debug.log
 node_modules
 
-config/database.js
-config/auth.js
+package-lock.json
