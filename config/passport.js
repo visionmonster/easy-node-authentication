@@ -9,10 +9,10 @@ var GoogleStrategy   = require('passport-google-oauth20').Strategy;
 // =========================================================================
 
 // MONGO USER MODEL
-// const User       = require('../app/models/mongouser');
+const User       = require('../app/models/mongouser');
 
 // MYSQL USER MODEL
-const User = require('../app/models/mysqluser');
+// const User = require('../app/models/mysqluser');
 
 // load the auth variables
 var configAuth = require('./auth'); // use this one for testing
@@ -33,7 +33,6 @@ module.exports = function(passport) {
     // used to deserialize the user
     passport.deserializeUser(function(id, done) {
         User.findById(id, function(err, user) {
-          console.log(user);
             done(err, user);
         });
     });
@@ -102,7 +101,9 @@ module.exports = function(passport) {
 
                         // create the user
                         var newUser            = new User();
-
+                        if (email) {
+                          user.local.displayName = email.split('@')[0];
+                        }
                         newUser.local.email    = email;
                         newUser.local.password = newUser.generateHash(password);
 
@@ -130,6 +131,9 @@ module.exports = function(passport) {
                     } else {
                         var user = req.user;
                         user.local.email = email;
+                        if (email) {
+                          user.local.displayName = email.split('@')[0];
+                        }
                         user.local.password = user.generateHash(password);
                         user.save(function (err) {
                             if (err)
@@ -155,7 +159,6 @@ module.exports = function(passport) {
     fbStrategy.passReqToCallback = true;  // allows us to pass in the req from our route (lets us check if a user is logged in or not)
     passport.use(new FacebookStrategy(fbStrategy,
     function(req, token, refreshToken, profile, done) {
-      console.log('req.user:', req.user);
         // asynchronous
         process.nextTick(function() {
 
@@ -167,7 +170,6 @@ module.exports = function(passport) {
                         return done(err);
 
                     if (user) {
-                      console.log('found user:', user);
                         // if there is a user id already but no token (user was linked at one point and then removed)
                         if (!user.facebook.token) {
                             user.facebook.token = token;
@@ -209,7 +211,6 @@ module.exports = function(passport) {
                 user.facebook.token = token;
                 user.facebook.displayName  = profile.name.givenName + ' ' + profile.name.familyName;
                 user.facebook.email = (profile.emails[0].value || '').toLowerCase();
-                console.log('link the accounts ----------->', user);
                 user.save(function(err) {
                     if (err)
                         return done(err);

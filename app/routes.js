@@ -126,6 +126,7 @@ module.exports = function(app, passport) {
         var user            = req.user;
         user.local.email    = undefined;
         user.local.password = undefined;
+        user.local.displayName = undefined;
         user.save(function(err) {
             res.redirect('/profile');
         });
