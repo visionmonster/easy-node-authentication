@@ -5,6 +5,7 @@
     "bcrypt-nodejs": "latest",
     "body-parser": "~1.15.2",
     "connect-flash": "~0.1.1",
+    "connect-sqlite3": "^0.9.11",
     "cookie-parser": "~1.4.3",
     "dotenv": "^8.2.0",
     "ejs": "~2.5.2",

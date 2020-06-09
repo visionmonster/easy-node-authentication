@@ -9,7 +9,7 @@ dotenv.config();
 var express  = require('express');
 var app      = express();
 var port     = process.env.PORT || 8080;
-var mongoose = require('mongoose');
+
 var passport = require('passport');
 var flash    = require('connect-flash');
 
@@ -18,18 +18,16 @@ var cookieParser = require('cookie-parser');
 var bodyParser   = require('body-parser');
 var session      = require('express-session');
 
+
+const SQLiteStore = require('connect-sqlite3')(session);
+
 const fs = require('fs');
 const key = fs.readFileSync('./key.pem');
 const cert = fs.readFileSync('./cert.pem');
 
-
-var configDB = require('./config/database.js');
-
 const https = require('https');
 const server = https.createServer({key: key, cert: cert }, app);
 
-// configuration ===============================================================
-mongoose.connect(configDB.url); // connect to our database
 
 require('./config/passport')(passport); // pass passport for configuration
 
@@ -43,7 +41,8 @@ app.set('view engine', 'ejs'); // set up ejs for templating
 
 // required for passport
 app.use(session({
-    secret: 'ilovescotchscotchyscotchscotch', // session secret
+    store: new SQLiteStore({dir:'./db'}),
+    secret: process.env.SESSION_SECRET, // session secret
     resave: true,
     saveUninitialized: true
 }));

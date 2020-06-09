@@ -1,6 +1,11 @@
 // load the things we need
 var mongoose = require('mongoose');
+const configUrl = require('../../config/database').url;
 var bcrypt   = require('bcrypt-nodejs');
+// configuration ===============================================================
+mongoose.connect(configUrl); // connect to our database
+
+
 
 // define the schema for our user model
 var userSchema = mongoose.Schema({
